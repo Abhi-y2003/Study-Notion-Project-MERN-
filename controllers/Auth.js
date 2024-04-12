@@ -276,13 +276,24 @@ exports.changePassword = async(req,res)=>{
             })
         }
 
-        const isUserExist = await User.findOne({email})
+        const isUserExist = await User.findOne({email});
 
         if(!isUserExist){
             return res.status(401).json({
                 success:false,
                 message:"User doesn't exist please Signup first"
             })
+        }else if(isUserExist){
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            const updatePassword = await user.findOneAndUpdate(
+                {email:email},
+                {
+                    password:hashedPassword
+                },
+                {new:true}
+            );
         }
         
 

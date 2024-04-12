@@ -4,6 +4,8 @@ const OTP = require("../models/OTP");
 const User = require("../models/User");
 const otpGenerator = require('otp-generator');
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 exports.sendOtp = async(req,res) => {
     
@@ -179,4 +181,114 @@ exports.singUp = async (req,res) =>{
         })
     }
 }
+
+
+//login
+
+exports.login = async (req,res) =>{
+
+    try {
+        const {email,password} = req.body;
+
+        if(!email || !password){
+            return res.status(403).json({
+                success:false,
+                message:"All fields are required"
+            })
+        };
+
+        const userExist = await User.findOne({email});
+
+        if(!userExist){
+            return res.status(400).json({
+                success:false,
+                message:"Please Signup"
+            })
+        }
+
+        //generate gwt token and comparing the password
+        if(await bcrypt.compare(password, user.password)) {
+            const payload = {
+                 email:user.email,
+                 id: _id,
+                 accountType:user.accountType,
+                }
+            const token = jwt.sign(payload, process.env.JWT_SECRET, {
+                expiresIn:"2h",
+            })
+
+            user.token = token;
+            user.password = undefined;
+
+            //creating a cookie and sending a response
+            const options = {
+                expires:new Date(Date.now() + 3*24*60*60*1000),
+                httpOnly:true,
+            }
+            res.cookie("token", token, options).status(200).json({
+                success:true,
+                token,
+                user,
+                message:"Logged in successfully"
+            });
+
+        }else {
+            return res.status(401).json({
+                success:false,
+                message:"Password is incorrect"
+            })
+        }
+
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({
+            success:false,
+            message:"Login failure please try again"
+        })
+        
+    }
+}
+
+
+//change password
+
+exports.changePassword = async(req,res)=>{
+
+    try {
+
+        //get data from req ke body
+        const {email, oldPassword, newPassword, confirmNewPassword} = req.body;
+
+        if(newPassword !== confirmNewPassword){
+            return res.status(401).json({
+                success:false,
+                message:"Password must be same"
+            })
+        }else if(newPassword == confirmNewPassword && newPassword == oldPassword){
+            return res.status(401).json({
+                success:false,
+                message:"Password should not be same as the old password"
+            })
+        }else if(!newPassword || !confirmNewPassword){
+            return res.status(401).json({
+                success:false,
+                message:"All fields are required"
+            })
+        }
+
+        const isUserExist = await User.findOne({email})
+
+        if(!isUserExist){
+            return res.status(401).json({
+                success:false,
+                message:"User doesn't exist please Signup first"
+            })
+        }
+        
+
+        
+    } catch (error) {
+        
+    }
+} 
     

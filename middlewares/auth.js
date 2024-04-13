@@ -13,7 +13,7 @@ exports.auth = async(req,res,next)=>{
         if(!token){
             return res.status(401).json({
                 success:false,
-                messaeg:"token is missing"
+                message:"token is missing"
             })
         }
 

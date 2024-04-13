@@ -26,7 +26,7 @@ exports.resetPasswordToken = async(req,res)=>{
 
         //updating this token into the user stored in the database
 
-        const updatedDetaisl = await user.findOneAndUpdate(
+        const updatedDetails = await user.findOneAndUpdate(
             {email:email},
             {
                 token:token,

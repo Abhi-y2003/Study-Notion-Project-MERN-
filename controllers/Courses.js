@@ -1,5 +1,5 @@
 const course = require("../models/Course");
-const tag = require("../models/Tag");
+const category = require("../models/Category");
 const user = require("../models/User");
 
 const {uploadImageToCloudinary} = require("../utils/imageUploder");
@@ -11,13 +11,13 @@ exports.createCourse = async (req,res) => {
     try {
 
         //fetc data 
-        const {courseName, courseDescription, whatYouWillLearn, price, tag} = req.body;
+        const {courseName, courseDescription, whatYouWillLearn, price, category} = req.body;
 
         //get thumbnail
         const thumbnail = req.files.thumbnail;
 
         //validation
-        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !tag || !thumbnail){
+        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail){
             return res.json({
                 success:false,
                 message:"All fields are required"
@@ -39,13 +39,13 @@ exports.createCourse = async (req,res) => {
         }
 
 
-        //check give tag is valid or not
+        //check give category is valid or not
 
-        const tagDetails = await tag.findbyId(tag);
-        if(!tagDetails){
+        const categoryDetails = await category.findbyId(category);
+        if(!categoryDetails){
             return res.status(404).json({
                 success:false,
-                message:"Tag details not found",
+                message:"Category details not found",
             })
         }
 
@@ -62,7 +62,7 @@ exports.createCourse = async (req,res) => {
             instructor: instructorDetails._id,
             whatYouWillLearn: whatYouWillLearn,
             price,
-            tag:tagDetails._id,
+            category:categoryDetails._id,
             thumbnail:thumbnailImage.secure_url,
         });
 
@@ -78,7 +78,7 @@ exports.createCourse = async (req,res) => {
             {new:true},
             );
 
-        //updating the tag schema
+        //updating the category schema
 
 
 

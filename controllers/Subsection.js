@@ -35,8 +35,10 @@ exports.createSubsection = async(req,res)=>{
                                                             subSection:subSectionDetails._id,
                                                         }
                                                         
-                                                     },{new:true},);
+                                                     },{new:true},).populate(subSection).exec();
     //log updated section here after adding populate query
+
+    console.log(updatedSection);
 
 
 

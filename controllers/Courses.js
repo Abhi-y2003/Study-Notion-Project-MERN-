@@ -10,7 +10,7 @@ require("dotenv").config();
 exports.createCourse = async (req,res) => {
     try {
 
-        //fetc data 
+        //fetch data 
         const {courseName, courseDescription, whatYouWillLearn, price, category} = req.body;
 
         //get thumbnail

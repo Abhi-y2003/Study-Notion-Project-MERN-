@@ -42,7 +42,6 @@ exports.auth = async(req,res,next)=>{
     }
 }
 
-console.error(error)
 
 
 //isStudent verification

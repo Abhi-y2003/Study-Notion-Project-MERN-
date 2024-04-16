@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     },
     accountType:{
         type:String,
-        enum:["Admin", "Instructor", "student"],
+        enum:["Admin", "Instructor", "Student"],
         required:true,
     },
     additionalDetails:{
@@ -30,11 +30,12 @@ const userSchema = new mongoose.Schema({
         required:true,
         ref:"profile",
     },
-    courses:{
-        type:mongoose.Schema.Types.ObjectId,
-        required:true,
-        ref:"courses",
-    },
+   courses: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Course",
+			},
+		],
     image:{
         type:String,
         required:true,
@@ -48,7 +49,7 @@ const userSchema = new mongoose.Schema({
     courseProgress:[
         {
             type:mongoose.Schema.Types.ObjectId,
-            ref:"courses"
+            ref:"courseProgress"
         }
     ],
 }) ;

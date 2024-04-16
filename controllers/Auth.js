@@ -5,6 +5,7 @@ const User = require("../models/User");
 const otpGenerator = require('otp-generator');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const profile = require("../models/Profile")
 require("dotenv").config();
 
 exports.sendOtp = async(req,res) => {
@@ -76,7 +77,7 @@ exports.sendOtp = async(req,res) => {
 
 //signup
 
-exports.singUp = async (req,res) =>{
+exports.signUp = async (req,res) =>{
 
 
     try {
@@ -92,7 +93,7 @@ exports.singUp = async (req,res) =>{
             = req.body;
     
     
-        if(!firstName || !lastname || !email || !password || !confirmPassword || !contactNumber || !otp){
+        if(!firstName || !lastName || !email || !password || !confirmPassword || !otp){
             return res.status(403).json({
                 success:false,
                 message:"All fields are required"
@@ -122,51 +123,60 @@ exports.singUp = async (req,res) =>{
         //.limit(1): Limits the results to one document.
         
     
-        const recentOtp = await OTP.findOne({email}).sort({createdAt:-1}).limit(1);
-        console.log(recentOtp);
+        const response = await OTP.findOne({email}).sort({createdAt:-1}).limit(1);
+        console.log(response);
 
-
+       
         //validating otp
-        if(recentOtp.length == 0){
+        if(!response){
             //otp not found
             return res.status(400).json({
                 success:false,
                 message:"Otp not found"
             })
-        }else if (otp !== recentOtp.otp){
+        }else if (otp !== response?.otp){
             return res.status(400).json({
                 success:false,
                 message:"OTP does not match"
             })
         }
 
-
+        
         //hashing the password
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
 
+       
         //create a entry in Db
+
+        let approved = ""
+        approved === "Instructor" ? (approved = false) : (approved = true)
 
         const profileDetails = await profile.create({
             gender:null,
             dateOfBirth:null,
             about:null,
             contactNumber:null,
-
         });
-        const user = await user.create({
+
+        
+        const user = await User.create({
             firstName,
             lastName,
             email,
-            password:hashedPassword,
-            accountType,
-            additionalDetails:profileDetails._id,
+            contactNumber,
+            password: hashedPassword,
+            accountType: accountType,
+            approved: approved,
+            additionalDetails: profileDetails._id,
             image: `https://api.dicebaear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
         })
 
+        
+
         return res.status(200).json({
-            success:false,
+            success:true,
             message:"Signup successful",
             user,
         })
@@ -186,69 +196,71 @@ exports.singUp = async (req,res) =>{
 //login
 
 exports.login = async (req,res) =>{
-
     try {
-        const {email,password} = req.body;
-
-        if(!email || !password){
-            return res.status(403).json({
-                success:false,
-                message:"All fields are required"
-            })
-        };
-
-        const userExist = await User.findOne({email});
-
-        if(!userExist){
-            return res.status(400).json({
-                success:false,
-                message:"Please Signup"
-            })
+        // Get email and password from request body
+        const { email, password } = req.body
+    
+        // Check if email or password is missing
+        if (!email || !password) {
+          // Return 400 Bad Request status code with error message
+          return res.status(400).json({
+            success: false,
+            message: `Please Fill up All the Required Fields`,
+          })
         }
-
-        //generate gwt token and comparing the password
-        if(await bcrypt.compare(password, user.password)) {
-            const payload = {
-                 email:user.email,
-                 id: _id,
-                 accountType:user.accountType,
-                }
-            const token = jwt.sign(payload, process.env.JWT_SECRET, {
-                expiresIn:"2h",
-            })
-
-            user.token = token;
-            user.password = undefined;
-
-            //creating a cookie and sending a response
-            const options = {
-                expires:new Date(Date.now() + 3*24*60*60*1000),
-                httpOnly:true,
+    
+        // Find user with provided email
+        const user = await User.findOne({ email }).populate("additionalDetails")
+    
+        // If user not found with provided email
+        if (!user) {
+          // Return 401 Unauthorized status code with error message
+          return res.status(401).json({
+            success: false,
+            message: `User is not Registered with Us Please SignUp to Continue`,
+          })
+        }
+    
+        // Generate JWT token and Compare Password
+        if (await bcrypt.compare(password, user.password)) {
+          const token = jwt.sign(
+            { email: user.email, id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            {
+              expiresIn: "24h",
             }
-            res.cookie("token", token, options).status(200).json({
-                success:true,
-                token,
-                user,
-                message:"Logged in successfully"
-            });
-
-        }else {
-            return res.status(401).json({
-                success:false,
-                message:"Password is incorrect"
-            })
+          )
+    
+          // Save token to user document in database
+          user.token = token
+          user.password = undefined
+          // Set cookie for token and return success response
+          const options = {
+            expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            httpOnly: true,
+          }
+          res.cookie("token", token, options).status(200).json({
+            success: true,
+            token,
+            user,
+            message: `User Login Success`,
+          })
+        } else {
+          return res.status(401).json({
+            success: false,
+            message: `Password is incorrect`,
+          })
         }
-
-    } catch (error) {
-        console.error(error);
-        return res.status(401).json({
-            success:false,
-            message:"Login failure please try again"
+      } catch (error) {
+        console.error(error)
+        // Return 500 Internal Server Error status code with error message
+        return res.status(500).json({
+          success: false,
+          message: `Login Failure Please Try Again`,
         })
-        
+      }
     }
-}
-
+    
 
 //change password
 

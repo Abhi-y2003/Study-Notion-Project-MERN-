@@ -15,8 +15,14 @@ const ratingAndReviewsSchema = new mongoose.Schema({
         type:String,
         required:true,
         trim:true,
+    },
+    course:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true,
+        ref:"course",
+        index: true,
     }
-    
+
 }) ;
 
 module.exports =mongoose.model("ratingAndReviews", ratingAndReviewsSchema);

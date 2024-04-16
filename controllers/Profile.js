@@ -1,5 +1,6 @@
 const profile = require("../models/Profile");
 const user = require("../models/User");
+const { uploadImageToCloudinary } = require("../utils/imageUploder")
 
 exports.updateProfile = async(req,res) =>{
     try {
@@ -31,7 +32,9 @@ exports.updateProfile = async(req,res) =>{
 
         return res.status(200).json({
             success:true,
-            message:"Profile updated successfully"
+            message:"Profile updated successfully",
+            data:profileDetails,
+
         })
 
     } catch (error) {
@@ -94,7 +97,8 @@ exports.getAllUserDetails = async (req,res)=>{
     
         return res.status(200).json({
             success:true,
-            message:"Got User data"
+            message:"Got User data",
+            data:userDetails,
         });
     
     } catch (error) {
@@ -122,13 +126,13 @@ exports.updateDisplayPicture = async (req, res) => {
         { image: image.secure_url },
         { new: true }
       )
-      res.send({
+      return res.status(200).json({
         success: true,
         message: `Image Updated successfully`,
         data: updatedProfile,
       })
     } catch (error) {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
         message: error.message,
       })

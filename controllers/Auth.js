@@ -150,9 +150,6 @@ exports.signUp = async (req,res) =>{
        
         //create a entry in Db
 
-        let approved = ""
-        approved === "Instructor" ? (approved = false) : (approved = true)
-
         const profileDetails = await profile.create({
             gender:null,
             dateOfBirth:null,
@@ -168,7 +165,6 @@ exports.signUp = async (req,res) =>{
             contactNumber,
             password: hashedPassword,
             accountType: accountType,
-            approved: approved,
             additionalDetails: profileDetails._id,
             image: `https://api.dicebaear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
         })
@@ -224,7 +220,7 @@ try {
     // Generate JWT token and Compare Password
     if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign(
-        { email: user.email, id: user._id, role: user.role },
+        { email: user.email, id: user._id, accountType: user.accountType },
         process.env.JWT_SECRET,
         {
           expiresIn: "24h",

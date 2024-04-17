@@ -99,6 +99,7 @@ exports.isAdmin = async(req,res,next)=>{
 
     try {
 
+        console.log(req.user.accountType);
         if(req.user.accountType !== "Admin"){
             return res.status(401).json({
                 success:false,

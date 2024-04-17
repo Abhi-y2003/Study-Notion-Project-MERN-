@@ -11,13 +11,17 @@ exports.createCourse = async (req,res) => {
     try {
 
         //fetch data 
+        console.log("one")
         const {courseName, courseDescription, whatYouWillLearn, price, category} = req.body;
 
+        console.log("two")
         //get thumbnail
-        const thumbnail = req.files.thumbnail;
+        //console.log(req.body.thumbnailImage)
+        const thumbnail = req.files.thumbnailImage 
+        console.log("one")
 
         //validation
-        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail){
+        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !category ){
             return res.json({
                 success:false,
                 message:"All fields are required"
@@ -26,10 +30,12 @@ exports.createCourse = async (req,res) => {
 
         //check for instructor details for db call object id 
 
+        console.log("four")
         const userId = req.user.id;
         const instructorDetails  = await user.findById(userId);
         console.log("Instructor Details:", instructorDetails);
 
+        console.log("five")
 
         if(!instructorDetails){
             return res.status(404).json({
@@ -40,13 +46,12 @@ exports.createCourse = async (req,res) => {
 
 
         //check give category is valid or not
-
-        const categoryDetails = await category.findbyId(category);
-        if(!categoryDetails){
-            return res.status(404).json({
-                success:false,
-                message:"Category details not found",
-            })
+        const categoryDetails = await category.findById(category)
+        if (!categoryDetails) {
+          return res.status(404).json({
+            success: false,
+            message: "Category Details Not Found",
+          })
         }
 
 
@@ -59,10 +64,9 @@ exports.createCourse = async (req,res) => {
         const newCourse = await course.create({
             courseName,
             courseDescription,
-            instructor: instructorDetails._id,
+            instructor: instructorDetails,
             whatYouWillLearn: whatYouWillLearn,
             price,
-            category:categoryDetails._id,
             thumbnail:thumbnailImage.secure_url,
         });
 
@@ -93,7 +97,7 @@ exports.createCourse = async (req,res) => {
     } catch (error) {
         console.error(error);
         return res.status(200).json({
-            success:true,
+            success:false,
             message:"Failed to create course",
         })
     }

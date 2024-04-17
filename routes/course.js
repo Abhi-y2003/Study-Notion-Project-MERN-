@@ -14,7 +14,7 @@ const {
 
 // Categories Controllers Import
 const {
-  showAllCategories,
+  showAllCategory,
   createCategory,
   categoryPageDetails,
 } = require("../controllers/Category")
@@ -80,9 +80,9 @@ const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth"
 // // ********************************************************************************************************
 // // Category can Only be Created by Admin
 // // TODO: Put IsAdmin Middleware here
-// router.post("/createCategory", auth, isAdmin, createCategory)
-// router.get("/showAllCategories", showAllCategories)
-// router.post("/getCategoryPageDetails", categoryPageDetails)
+ router.post("/createCategory", auth, isAdmin, createCategory)
+ router.get("/showAllCategories", showAllCategory)
+ router.post("/getCategoryPageDetails", categoryPageDetails)
 
 // // ********************************************************************************************************
 // //                                      Rating and Review
